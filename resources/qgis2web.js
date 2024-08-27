@@ -9,7 +9,7 @@ var map = new ol.Map({
 });
 
 //initial view - epsg:3857 coordinates if not "Match project CRS"
-map.getView().fit([8068152.085880, 2643843.051037, 8072538.920666, 2646702.430801], map.getSize());
+map.getView().fit([8068866.302800, 2643558.246073, 8072727.542192, 2646298.535962], map.getSize());
 
 ////small screen definition
     var hasTouchScreen = map.getViewport().classList.contains('ol-touch');
@@ -433,7 +433,56 @@ var bottomRightContainerDiv = document.getElementById('bottom-right-container')
 
 //title
 
+var Title = new ol.control.Control({
+    element: (() => {
+        var titleElement = document.createElement('div');
+        titleElement.className = 'top-right-title ol-control';
+        titleElement.innerHTML = '<h2 class="project-title">Direct Georeferencing of CanSat Aerial Imagery</h2>';
+        return titleElement;
+    })(),
+    target: 'top-right-container'
+});
+map.addControl(Title)
+    
 //abstract
+
+var Abstract = new ol.control.Control({
+    element: (() => {
+        var titleElement = document.createElement('div');
+        titleElement.className = 'bottom-left-abstract ol-control';
+        titleElement.id = 'abstract';
+
+        var linkElement = document.createElement('a');
+
+        if (1004 > 240) {
+            linkElement.setAttribute("onmouseenter", "showAbstract()");
+            linkElement.setAttribute("onmouseleave", "hideAbstract()");
+            linkElement.innerHTML = 'i';
+
+            window.hideAbstract = function() {
+                linkElement.classList.add("project-abstract");
+                linkElement.classList.remove("project-abstract-uncollapsed");
+                linkElement.innerHTML = 'i';
+            }
+
+            window.showAbstract = function() {
+                linkElement.classList.remove("project-abstract");
+                linkElement.classList.add("project-abstract-uncollapsed");
+                linkElement.innerHTML = 'CanSats, miniature satellite-like devices, are revolutionizing educational and research applications in space technology. This paper explores the novel use of Earth Observation (EO) payloads on CanSats for remote sensing and geospatial intelligence, focusing on direct georeferencing techniques. By integrating precise MEMS-based IMU sensors, high-accuracy GNSS receivers, and OV2640-based image sensors, we demonstrate a method to accurately assign geographic locations to images without ground control points. Our approach leverages sensor dimensions, payload mounting details, and trajectory data to transform frames of reference, enabling precise image localization through translations and rotations. Data collected during the CanSat India finals launch of IIT Jodhpur\'s CanSat validates this method. The resulting georeferenced images showcase the potential of CanSats to advance remote sensing and geospatial intelligence, opening new avenues for cost-effective, high-resolution Earth observation.';
+            }
+
+            hideAbstract();
+        } else {
+            linkElement.classList.add("project-abstract-uncollapsed");
+            linkElement.innerHTML = 'CanSats, miniature satellite-like devices, are revolutionizing educational and research applications in space technology. This paper explores the novel use of Earth Observation (EO) payloads on CanSats for remote sensing and geospatial intelligence, focusing on direct georeferencing techniques. By integrating precise MEMS-based IMU sensors, high-accuracy GNSS receivers, and OV2640-based image sensors, we demonstrate a method to accurately assign geographic locations to images without ground control points. Our approach leverages sensor dimensions, payload mounting details, and trajectory data to transform frames of reference, enabling precise image localization through translations and rotations. Data collected during the CanSat India finals launch of IIT Jodhpur\'s CanSat validates this method. The resulting georeferenced images showcase the potential of CanSats to advance remote sensing and geospatial intelligence, opening new avenues for cost-effective, high-resolution Earth observation.';
+        }
+
+        titleElement.appendChild(linkElement);
+        return titleElement;
+    })(),
+    target: 'bottom-left-container'
+});
+map.addControl(Abstract);
 
 
 //geolocate
@@ -838,11 +887,22 @@ if (elementToMove && parentElement) {
 //layerswitcher
 
 var layerSwitcher = new ol.control.LayerSwitcher({
-    tipLabel: "Layers",
-    target: 'top-right-container'
-});
+    activationMode: 'click',
+	startActive: true,
+	tipLabel: "Layers",
+    target: 'top-right-container',
+	collapseLabel: '»',
+	collapseTipLabel: 'Close'
+    });
 map.addControl(layerSwitcher);
-    
+if (hasTouchScreen || isSmallScreen) {
+	document.addEventListener('DOMContentLoaded', function() {
+		setTimeout(function() {
+			layerSwitcher.hidePanel();
+		}, 500);
+	});	
+}
+
 
 
 
