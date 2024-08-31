@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Data Viewer</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+    <style>
+        body, html {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            background-color: #f0f0f0;
+        }
+        .container {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            padding: 20px 0;
+            margin: 0;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .table-container {
+            flex-grow: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+        #csvTable {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+        }
+        #csvTable th, #csvTable td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            white-space: nowrap;
+        }
+        #csvTable th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        #csvTable tr:hover {
+            background-color: #f5f5f5;
+        }
+        .dataTables_wrapper .dataTables_length, 
+        .dataTables_wrapper .dataTables_filter, 
+        .dataTables_wrapper .dataTables_info, 
+        .dataTables_wrapper .dataTables_processing, 
+        .dataTables_wrapper .dataTables_paginate {
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Flight Data Viewer</h1>
+        <div class="table-container">
+            <table id="csvTable">
+                <thead>
+                    <!-- Table headers will be dynamically inserted here -->
+                </thead>
+                <tbody>
+                    <!-- Table data will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Function to parse CSV data
+            function parseCSV(csv) {
+                const lines = csv.split("\n");
+                const result = [];
+                const headers = lines[0].split(",");
+
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i]) continue;
+                    const obj = {};
+                    const currentline = lines[i].split(",");
+
+                    for (let j = 0; j < headers.length; j++) {
+                        obj[headers[j]] = currentline[j];
+                    }
+                    result.push(obj);
+                }
+                return { headers: headers, data: result };
+            }
+
+            // Fetch and process the CSV file
+            fetch('flightData.csv')
+                .then(response => response.text())
+                .then(data => {
+                    const parsedData = parseCSV(data);
+
+                    // Create table headers
+                    let headerHtml = "<tr>";
+                    parsedData.headers.forEach(header => {
+                        headerHtml += `<th>${header}</th>`;
+                    });
+                    headerHtml += "</tr>";
+                    $("#csvTable thead").html(headerHtml);
+
+                    // Initialize DataTable
+                    $('#csvTable').DataTable({
+                        data: parsedData.data,
+                        columns: parsedData.headers.map(header => ({ data: header })),
+                        pageLength: 25,
+                        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+                        scrollX: true,
+                        scrollY: 'calc(100vh - 200px)',
+                        scroller: true,
+                        deferRender: true
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
